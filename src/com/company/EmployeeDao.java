@@ -8,5 +8,5 @@ public interface EmployeeDao {
     public Employee getEmployee(int id); // id?
     public void createEmployee() throws SQLException;
     public void updateEmployee(Employee employee);
-    public void deleteEmployee(Employee employee);
+    public void deleteEmployee(Employee employee) throws SQLException;
 }

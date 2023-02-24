@@ -60,6 +60,28 @@ public class Employee {
         this.salary = rank * salaryCoefficient;
     }
 
+    public void setRole(String role, int managerId){
+        if(role == "employee"){
+            setManager(false);
+            setCEO(false);
+            setManagerId(managerId);
+        }else if (role == "manager"){
+            setManager(true);
+            setCEO(false);
+            setManagerId(managerId);
+        }else if (role == "CEO"){
+            setManager(false);
+            setCEO(true);
+        }
+    }
+    public boolean getIsCEO(){
+        return this.isCEO;
+    }
+
+    public boolean getIsManager(){
+        return this.isManager;
+    }
+
     public void setManager(boolean manager) {
         isManager = manager;
     }
