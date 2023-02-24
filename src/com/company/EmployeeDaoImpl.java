@@ -10,7 +10,6 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
     static final String DB_URL = "jdbc:mysql://localhost:3306/library";
     static final String USER = "rooter";
     static final String PASS = "rooter";
-    static final String GET_EMPLOYEES_QUERY = "SELECT * FROM employee";
     Connection connection;
     Statement statement;
     ResultSet resultSet;
@@ -26,7 +25,7 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
     public List<Employee> getAllEmployees() throws SQLException {
         connection = DriverManager.getConnection(DB_URL, USER, PASS);
         statement = connection.createStatement();
-        resultSet = statement.executeQuery(GET_EMPLOYEES_QUERY);
+        resultSet = statement.executeQuery(QueryHelper.getEmployees());
         while (resultSet.next()){
             int id = resultSet.getInt("id");
             String firstName = resultSet.getString("firstName");
@@ -59,7 +58,8 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
         employee.setRole(role, managerId);
         // upload the employee to db
         // get the id automatically incremented to the new employee
-        resultSet = statement.executeQuery("INSERT INTO `employee` (`Id`, `FirstName`, `LastName`, `Salary`, `isCEO`, `isManager`, `ManagerId`) VALUES (NULL,'"+ employee.getFirstName()+"', '"+employee.getLastName()+"', "+employee.getSalary()+", "+employee.getIsCEO()+", "+employee.getIsManager()+", "+employee.getManagerID()+");SELECT LAST_INSERT_ID();");
+
+        resultSet = statement.executeQuery(QueryHelper.createEmployee(employee));
         while (resultSet.next()){
             int id = resultSet.getInt("LAST_INSERT_ID()");
             employee.setId(id); // get id from db l8r
@@ -68,7 +68,7 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
     } // create new employee
 
     @Override
-    public void updateEmployee(Employee employee) throws SQLException { // TODO: queries
+    public void updateEmployee(Employee employee) throws SQLException {
         System.out.print("Please choose a field to update:\n" +
                 "1. First name \n" +
                 "2. Last name \n" +
@@ -81,22 +81,22 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
             switch (new Scanner(System.in).nextInt()) {
                 case 1:
                     employee.setFirstName(new Scanner(System.in).nextLine());
-                    statement.execute("UPDATE employee SET FirstName = '"+employee.getFirstName()+"' WHERE Id = "+ employee.getId() +";");
+                    statement.execute(QueryHelper.setFirstName(employee));
                     break;
                 case 2:
                     employee.setLastName(new Scanner(System.in).nextLine());
-                    statement.execute("UPDATE employee SET LastName = '"+employee.getLastName()+"' WHERE Id = "+ employee.getId() +";");
+                    statement.execute(QueryHelper.setLastName(employee));
                     break;
                 case 3:
                     employee.setSalary(getRank());
-                    statement.execute("UPDATE employee SET Salary = '"+employee.getSalary()+"' WHERE Id = "+ employee.getId() +";");
+                    statement.execute(QueryHelper.setSalary(employee));
                     break;
                 case 4:
                     String newRole = (getRole("update to"));
                     employee.setRole(newRole, getManagerID(newRole));
-                    statement.execute("UPDATE employee SET isCEO = "+employee.getIsCEO()+" WHERE Id = "+ employee.getId() +";");
-                    statement.execute("UPDATE employee SET isManager = "+employee.getIsManager()+" WHERE Id = "+ employee.getId() +";");
-                    statement.execute("UPDATE employee SET ManagerId = "+employee.getManagerID()+" WHERE Id = "+ employee.getId() +";");
+                    statement.execute(QueryHelper.setIsCEO(employee));
+                    statement.execute(QueryHelper.setIsManager(employee));
+                    statement.execute(QueryHelper.setManagerId(employee));
                     break;
                 case 5:
                     flag = false;
@@ -115,7 +115,7 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
         if(managerToEmployee!=null){
             System.out.println("The employee you are trying to delete is a manager to someone.");
         }else{
-            statement.execute("DELETE FROM employee WHERE Id="+employeeDel.getId()+";");
+            statement.execute(QueryHelper.deleteEmployee(employeeDel));
         }
     } // delete employee that isn't a boss to anyone
 
