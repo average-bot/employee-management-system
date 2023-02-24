@@ -12,14 +12,10 @@ public class ManagementSystem {
             System.out.println("Employee: [Id : " + employee.getId() + ", Firstname : " + employee.getFirstName() + " ]");
         }
 
-
         //update employee
         Employee employee = employeeDao.getAllEmployees().get(0);
         employee.setFirstName("Michael");
         employeeDao.updateEmployee(employee);
 
-        //get the employee
-        employeeDao.getEmployee(0);
-        System.out.println("Employee: [Id : " + employee.getId() + ", Name : " + employee.getFirstName() + " ]");
     }
 }
