@@ -15,14 +15,14 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
     Statement statement;
     ResultSet resultSet;
 
-    //list is working as a database
+    //list is working as a local database
     List<Employee> employees;
 
     public EmployeeDaoImpl(){
         employees = new ArrayList<Employee>();
     }
 
-    @Override // has to be updated evey now and then incase there is a change in the db from another user running the program the same time.
+    @Override // has to be updated evey now and then in case there is a change in the db from another user running the program the same time.
     public List<Employee> getAllEmployees() throws SQLException {
         connection = DriverManager.getConnection(DB_URL, USER, PASS);
         statement = connection.createStatement();
@@ -46,7 +46,7 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
     @Override
     public Employee getEmployee(int id) {
         return (Employee) employees.stream().filter(employee -> Objects.equals(employee.getId(), id));
-    }
+    } // find employee with id
 
     @Override
     public void createEmployee() throws SQLException {
@@ -65,25 +65,62 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
             employee.setId(id); // get id from db l8r
         }
         employees.add(employee); // add to local arraylist
-    }
+    } // create new employee
 
     @Override
-    public void updateEmployee(Employee employee) {
-
-    }
+    public void updateEmployee(Employee employee) throws SQLException { // TODO: queries
+        System.out.print("Please choose a field to update:\n" +
+                "1. First name \n" +
+                "2. Last name \n" +
+                "3. Salary \n" +
+                "4. Role \n" +
+                "5. EXIT \n" +
+                "Enter option number here: ");
+        boolean flag = true;
+        while(flag) {
+            switch (new Scanner(System.in).nextInt()) {
+                case 1:
+                    employee.setFirstName(new Scanner(System.in).nextLine());
+                    statement.execute("UPDATE employee SET FirstName = '"+employee.getFirstName()+"' WHERE Id = "+ employee.getId() +";");
+                    break;
+                case 2:
+                    employee.setLastName(new Scanner(System.in).nextLine());
+                    statement.execute("UPDATE employee SET LastName = '"+employee.getLastName()+"' WHERE Id = "+ employee.getId() +";");
+                    break;
+                case 3:
+                    employee.setSalary(getRank());
+                    statement.execute("UPDATE employee SET Salary = '"+employee.getSalary()+"' WHERE Id = "+ employee.getId() +";");
+                    break;
+                case 4:
+                    String newRole = (getRole("update to"));
+                    employee.setRole(newRole, getManagerID(newRole));
+                    statement.execute("UPDATE employee SET isCEO = "+employee.getIsCEO()+" WHERE Id = "+ employee.getId() +";");
+                    statement.execute("UPDATE employee SET isManager = "+employee.getIsManager()+" WHERE Id = "+ employee.getId() +";");
+                    statement.execute("UPDATE employee SET ManagerId = "+employee.getManagerID()+" WHERE Id = "+ employee.getId() +";");
+                    break;
+                case 5:
+                    flag = false;
+                    break;
+                default:
+                    System.out.println("Invalid option. Try again by selecting a number.");
+                    break;
+            }
+        }
+    } // update existing employee
 
     @Override
-    public void deleteEmployee(Employee id) throws SQLException {
+    public void deleteEmployee(Employee employeeDel) throws SQLException {
         // You should not be able to delete a manger or CEO that is managing another employee
-        Employee managerToEmployee = (Employee) employees.stream().filter(employee -> Objects.equals(employee.getManagerID(), id));
+        Employee managerToEmployee = (Employee) employees.stream().filter(employee -> Objects.equals(employee.getManagerID(), employeeDel.getId()));
         if(managerToEmployee!=null){
             System.out.println("The employee you are trying to delete is a manager to someone.");
         }else{
-            statement.execute("DELETE FROM employee WHERE Id="+id+";");
+            statement.execute("DELETE FROM employee WHERE Id="+employeeDel.getId()+";");
         }
-    }
+    } // delete employee that isn't a boss to anyone
 
     private int getRank(){
+        System.out.println("To select salary for the employee please input their rank.");
         int rank = 0;
         Scanner scanner;
         do{
@@ -93,7 +130,7 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
             }
         }while ((rank > 0) && (rank <= 10));
         return rank;
-    }
+    } // get the rank from the user to later decide the salary
 
     private int getManagerID(String role){
         // managers can manage other managers and employee but not CEO
@@ -125,7 +162,7 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
             }while(true);
             return id;
         }
-    }
+    } // get the manager id
 
 
     private String getRole(String operation){
@@ -152,5 +189,5 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
             System.out.print("Invalid input. Please input characters: ");
         }while(true);
         return potentialRole;
-    }
-} // TODO: validation!
+    } // get the available role for..
+}
