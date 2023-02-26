@@ -6,7 +6,7 @@ public class Employee {
     private String lastName;
     private double salary;
     private boolean isManager;
-    private int managerId; // nullable
+    private int managerId; // can be null
     private boolean isCEO;
 
     public Employee(){}
@@ -21,6 +21,7 @@ public class Employee {
         this.isCEO = isCEO;
     }
 
+    // getters
     public int getId() {
         return id;
     }
@@ -33,14 +34,20 @@ public class Employee {
     public double getSalary() {
         return salary;
     }
+    public boolean getIsCEO(){
+        return this.isCEO;
+    }
+    public boolean getIsManager(){
+        return this.isManager;
+    }
     public int getManagerID() {
         return managerId;
     }
 
+    // setters
     public void setId(int id) {
         this.id = id;
     }
-
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
@@ -59,36 +66,28 @@ public class Employee {
         }
         this.salary = rank * salaryCoefficient;
     }
-
-    public void setRole(String role, int managerId){
-        if(role == "employee"){
-            setManager(false);
-            setCEO(false);
-            setManagerId(managerId);
-        }else if (role == "manager"){
-            setManager(true);
-            setCEO(false);
-            setManagerId(managerId);
-        }else if (role == "CEO"){
-            setManager(false);
-            setCEO(true);
-        }
-    }
-    public boolean getIsCEO(){
-        return this.isCEO;
-    }
-
-    public boolean getIsManager(){
-        return this.isManager;
-    }
-
-    public void setManager(boolean manager) {
-        isManager = manager;
-    }
     public void setManagerId(int managerId) {
         this.managerId = managerId;
     }
+    public void setManager(boolean manager) {
+        isManager = manager;
+    }
     public void setCEO(boolean CEO) {
         isCEO = CEO;
+    }
+
+    public void setRole(String role, int managerID){
+        if(role.equals("employee")){
+            setManager(false);
+            setCEO(false);
+            setManagerId(managerID);
+        }else if (role.equals("manager")){
+            setManager(true);
+            setCEO(false);
+            setManagerId(managerID);
+        }else if (role.equals("ceo")){
+            setManager(false);
+            setCEO(true);
+        }
     }
 }

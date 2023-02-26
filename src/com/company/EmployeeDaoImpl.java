@@ -16,9 +16,13 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
 
     //list is working as a local database
     List<Employee> employees;
-
     public EmployeeDaoImpl(){
         employees = new ArrayList<Employee>();
+    }
+
+    @Override
+    public Employee getEmployee(int id){
+        return employees.stream().filter(employee -> Objects.equals(employee.getId(), id)).findAny().get();
     }
 
     @Override // has to be updated evey now and then in case there is a change in the db from another user running the program the same time.
@@ -37,28 +41,32 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
             Employee employee = new Employee(id, firstName, lastName, salary, isManager, managerId, isCEO);
             employees.add(employee);
         }
-        connection.close();
-        statement.close();
         return employees;
     }
 
     @Override
     public void createEmployee() throws SQLException {
         Employee employee = new Employee();
+        System.out.println("Set first name: ");
         employee.setFirstName(new Scanner(System.in).nextLine());
+        System.out.println("Set last name: ");
         employee.setLastName(new Scanner(System.in).nextLine());
         employee.setSalary(InputHelper.getRank());
-        String role = InputHelper.getRole("create", employees);
-        int managerId = InputHelper.getManagerID(role, employees);
+        String role = InputHelper.getRole("create", employees, 0);
+        int managerId = InputHelper.getManagerId(role, employees);
         employee.setRole(role, managerId);
         // upload the employee to db
         // get the id automatically incremented to the new employee
 
-        resultSet = statement.executeQuery(QueryHelper.createEmployee(employee));
+        resultSet = statement.executeQuery(QueryHelper.getAutoIncrementId());
         while (resultSet.next()){
-            int id = resultSet.getInt("LAST_INSERT_ID()");
+            int id = resultSet.getInt("AUTO_INCREMENT");
             employee.setId(id); // get id from db l8r
         }
+
+        statement.execute(QueryHelper.createEmployee(employee));
+
+
         employees.add(employee); // add to local arraylist
     } // create new employee
 
@@ -73,12 +81,15 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
                 "Enter option number here: ");
         boolean flag = true;
         while(flag) {
+            System.out.print("Choose update menu option: ");
             switch (new Scanner(System.in).nextInt()) {
                 case 1:
+                    System.out.print("Please input new first name: ");
                     employee.setFirstName(new Scanner(System.in).nextLine());
                     statement.execute(QueryHelper.setFirstName(employee));
                     break;
                 case 2:
+                    System.out.print("Please input new last name: ");
                     employee.setLastName(new Scanner(System.in).nextLine());
                     statement.execute(QueryHelper.setLastName(employee));
                     break;
@@ -87,8 +98,8 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
                     statement.execute(QueryHelper.setSalary(employee));
                     break;
                 case 4:
-                    String newRole = (InputHelper.getRole("update to", employees));
-                    employee.setRole(newRole, InputHelper.getManagerID(newRole, employees));
+                    String newRole = (InputHelper.getRole("update to", employees, employee.getId()));
+                    employee.setRole(newRole, InputHelper.getManagerId(newRole, employees));
                     statement.execute(QueryHelper.setIsCEO(employee));
                     statement.execute(QueryHelper.setIsManager(employee));
                     statement.execute(QueryHelper.setManagerId(employee));
@@ -106,11 +117,17 @@ public class EmployeeDaoImpl implements EmployeeDao {    // TODO : Validation on
     @Override
     public void deleteEmployee(Employee employeeDel) throws SQLException {
         // You should not be able to delete a manger or CEO that is managing another employee
-        Employee managerToEmployee = (Employee) employees.stream().filter(employee -> Objects.equals(employee.getManagerID(), employeeDel.getId()));
-        if(managerToEmployee!=null){
+        boolean managerToEmployee = employees.stream().anyMatch(employee -> Objects.equals(employee.getManagerID(), employeeDel.getId()));
+        if(managerToEmployee){
             System.out.println("The employee you are trying to delete is a manager to someone.");
         }else{
             statement.execute(QueryHelper.deleteEmployee(employeeDel));
         }
     } // delete employee that isn't a boss to anyone
+
+    @Override
+    public void closeConnection() throws SQLException {
+        connection.close();
+        statement.close();
+    }
 }

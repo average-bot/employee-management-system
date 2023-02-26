@@ -3,13 +3,16 @@ package com.company;
 public class QueryHelper {
 
     public static String getEmployees() {
-        return "SELECT * FROM employee";
-    } // get all employees
+        return "SELECT * FROM employee ORDER BY isCEO DESC, isManager DESC;";
+    } // get all employees - ceos, managers and then employees
 
     public static String createEmployee(Employee employee) {
-        return "INSERT INTO `employee` (`Id`, `FirstName`, `LastName`, `Salary`, `isCEO`, `isManager`, `ManagerId`) VALUES (NULL,'"+ employee.getFirstName()+"', '"+employee.getLastName()+"', "+employee.getSalary()+", "+employee.getIsCEO()+", "+employee.getIsManager()+", "+employee.getManagerID()+");SELECT LAST_INSERT_ID();";
+        return "INSERT INTO `employee` (`Id`, `FirstName`, `LastName`, `Salary`, `isCEO`, `isManager`, `ManagerId`) VALUES (NULL,'"+ employee.getFirstName()+"', '"+employee.getLastName()+"', "+employee.getSalary()+", "+employee.getIsCEO()+", "+employee.getIsManager()+", "+employee.getManagerID()+");";
     } // create employee + get their id
 
+    public static String getAutoIncrementId(){
+        return "SELECT `AUTO_INCREMENT` FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'library' AND TABLE_NAME   = 'employee'";
+    }
 
     // update field
     public static String setFirstName(Employee employee) {
